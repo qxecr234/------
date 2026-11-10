@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>票准 TaxSure · 中小企业发票合规 AI 审计官</title>
+<style>
+  :root{
+    --ink:#14213D; --ink-2:#2B3A5B; --gold:#C9A227; --bg:#F6F5F2; --card:#FFFFFF;
+    --line:#E4E0D6; --muted:#7A7A73;
+    --high:#B02A1E; --mid:#A96500; --low:#3F6491;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#222;font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;font-size:14px;line-height:1.65}
+  header{background:var(--ink);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:44px;height:44px;border-radius:10px;background:var(--gold);color:var(--ink);font-size:22px;font-weight:800;display:grid;place-items:center}
+  h1{margin:0;font-size:19px;letter-spacing:.5px}
+  header p{margin:2px 0 0;font-size:12px;color:#B9C2D6}
+  .badge{font-size:12px;border:1px solid #465578;color:#CFD8EA;border-radius:999px;padding:5px 12px}
+  .badge b{color:var(--gold)}
+  nav{display:flex;gap:4px;background:#EDEAE2;padding:0 28px;border-bottom:1px solid var(--line)}
+  nav button{background:none;border:0;padding:13px 18px;font-size:14px;color:#5A5A52;cursor:pointer;border-bottom:3px solid transparent;font-family:inherit}
+  nav button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--gold);background:#fff}
+  main{max-width:1080px;margin:0 auto;padding:24px 20px 60px}
+  .panel{display:none} .panel.on{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+  .card h3{margin:0 0 12px;font-size:15px;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .card h3::before{content:"";width:4px;height:15px;background:var(--gold);border-radius:2px}
+  textarea,input,select{width:100%;font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#FCFCFA;color:#222}
+  textarea{min-height:84px;resize:vertical}
+  textarea:focus,input:focus,select:focus{outline:none;border-color:var(--ink-2);background:#fff}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  button.primary{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;font-family:inherit}
+  button.primary:hover{background:var(--ink-2)}
+  button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 16px;cursor:pointer;font-family:inherit;font-size:13px}
+  button.ghost:hover{border-color:var(--ink-2)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{font-size:12.5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;cursor:pointer;color:#4A4A44}
+  .chip:hover{border-color:var(--gold);color:var(--ink)}
+  .answer{white-space:pre-wrap}
+  .answer b{color:var(--ink)}
+  .cite{display:flex;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#FCFCFA}
+  .cite .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;display:grid;place-items:center}
+  .cite .t{font-weight:700;color:var(--ink)}
+  .cite .d{font-size:12px;color:var(--muted)}
+  .cite .x{font-size:13px;color:#3A3A34;margin-top:4px}
+  .score{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{background:#F1EEE6;color:var(--ink);font-weight:700;font-size:12.5px}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .lv{display:inline-block;font-size:11px;padding:2px 8px;border-radius:5px;color:#fff;font-weight:700;white-space:nowrap}
+  .lv.高{background:var(--high)} .lv.中{background:var(--mid)} .lv.低{background:var(--low)}
+  .stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:14px}
+  .stat div{background:#FCFCFA;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .stat b{display:block;font-size:22px;color:var(--ink);line-height:1.2}
+  .stat span{font-size:12px;color:var(--muted)}
+  .verdict{border-left:4px solid var(--gold);background:#FBF7EA;padding:10px 14px;border-radius:6px;font-size:13.5px;color:#4A3F1C;margin-bottom:14px}
+  .notice{font-size:12px;color:var(--muted);margin-top:6px}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid #ccc;border-top-color:var(--ink);border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .empty{color:var(--muted);font-size:13px;padding:10px 0}
+  footer{border-top:1px solid var(--line);padding:16px 28px 40px;color:var(--muted);font-size:11.5px;text-align:center;line-height:1.8}
+  .tag{display:inline-block;background:#EEF1F7;color:#3F4F72;font-size:11px;border-radius:5px;padding:1px 7px;margin-right:5px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">票</div>
+    <div>
+      <h1>票准 TaxSure</h1>
+      <p>中小企业发票合规 AI 审计官 · 报税前先过一遍</p>
+    </div>
+  </div>
+  <div class="badge" id="modeBadge">运行模式：<b>检测中…</b></div>
+</header>
+
+<nav>
+  <button class="on" data-panel="ask">政策问答</button>
+  <button data-panel="audit">发票体检</button>
+  <button data-panel="calc">税费试算</button>
+</nav>
+
+<main>
+  <!-- ============ 问答 ============ -->
+  <section class="panel on" id="panel-ask">
+    <div class="card">
+      <h3>用大白话问，系统先找依据，再算数</h3>
+      <div class="chips" id="chips"></div>
+      <textarea id="question" placeholder="例如：我这个季度开了 28 万的普票，小规模纳税人，要交多少税？"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="primary" id="btnAsk">提问</button>
+        <span class="notice">所有回答都会附条文出处；找不到依据会直接说“没找到”，不编。</span>
+      </div>
+    </div>
+    <div id="askResult"></div>
+  </section>
+
+  <!-- ============ 体检 ============ -->
+  <section class="panel" id="panel-audit">
+    <div class="card">
+      <h3>上传发票台账，逐行体检</h3>
+      <div class="grid">
+        <div><label>企业全称（用于核对抬头）</label><input id="company" value="重庆山城智造科技有限公司"></div>
+        <div><label>申报期间</label><input id="period" placeholder="2026Q4" value="2026Q4"></div>
+        <div><label>台账文件（.xlsx / .csv）</label><input id="file" type="file" accept=".xlsx,.xls,.csv"></div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="btnAudit">上传并体检</button>
+        <button class="ghost" id="btnSample">载入样例台账（内置 8 行，埋了 6 类问题）</button>
+      </div>
+      <p class="notice">支持数电发票服务平台导出的台账，或自制台账；列名需包含：发票号码、开票日期、购买方名称、项目名称、金额、税率、税额、价税合计、备注。</p>
+    </div>
+    <div id="auditResult"></div>
+  </section>
+
+  <!-- ============ 试算 ============ -->
+  <section class="panel" id="panel-calc">
+    <div class="card">
+      <h3>税费试算（规则引擎，不经过大模型）</h3>
+      <div class="grid">
+        <div><label>纳税人类型</label>
+          <select id="c_type"><option value="small">小规模纳税人</option><option value="general">一般纳税人</option></select>
+        </div>
+        <div><label>本季不含税销售额（元）</label><input id="c_sales" type="number" value="280000"></div>
+        <div><label>其中专票金额（元）</label><input id="c_special" type="number" value="0"></div>
+        <div><label>适用税率（一般纳税人）</label>
+          <select id="c_rate"><option value="0.06">6%</option><option value="0.13">13%</option><option value="0.09">9%</option><option value="0.03">3%</option></select>
+        </div>
+        <div><label>可抵扣进项税额（元）</label><input id="c_input" type="number" value="0"></div>
+        <div><label>应纳税所得额（元）</label><input id="c_profit" type="number" value="200000"></div>
+        <div><label>所在地</label>
+          <select id="c_city"><option>市区</option><option>县城</option><option>镇</option><option>其他</option></select>
+        </div>
+        <div><label>买卖合同金额（元，用于印花税）</label><input id="c_contract" type="number" value="0"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <label style="margin:0"><input type="checkbox" id="c_half" checked style="width:auto"> 享受“六税两费”减半</label>
+        <label style="margin:0"><input type="checkbox" id="c_small" checked style="width:auto"> 符合小型微利企业条件</label>
+        <button class="primary" id="btnCalc" style="margin-left:auto">试算</button>
+      </div>
+    </div>
+    <div id="calcResult"></div>
+  </section>
+</main>
+
+<footer>
+  票准 TaxSure · 课程实践原型 · 本地规则库 + 检索增强生成（RAG）<br>
+  本工具输出为规则试算与法规检索结果，不构成税务意见或税务代理服务；实际申报以主管税务机关口径为准。
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => (Number(n) || 0).toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'panel-' + b.dataset.panel));
+});
+
+/* ---------- health ---------- */
+fetch('/api/health').then(r => r.json()).then(d => {
+  $('#modeBadge').innerHTML = `法规库 <b>${d.regs}</b> 条 · 生成模式 <b>${d.llm ? 'LLM 已接入' : '模板模式（离线可跑）'}</b>`;
+}).catch(() => $('#modeBadge').textContent = '服务未连接');
+
+/* ---------- 问答 ---------- */
+const EXAMPLES = [
+  '我这个季度开了 28 万的普票，小规模纳税人，要交多少税？',
+  '建筑服务发票备注栏要写什么？',
+  '公司这个月有餐饮发票，进项能抵扣吗？',
+  '年销售额 480 万，要不要转一般纳税人？',
+  '小微企业实际税负 5% 是怎么回事？',
+  '我开的是专票，还能享受季度 30 万免税吗？'
+];
+$('#chips').innerHTML = EXAMPLES.map(q => `<span class="chip">${esc(q)}</span>`).join('');
+$('#chips').onclick = e => { if (e.target.classList.contains('chip')) { $('#question').value = e.target.textContent; ask(); } };
+
+async function ask() {
+  const q = $('#question').value.trim();
+  if (!q) return;
+  $('#askResult').innerHTML = `<div class="card"><span class="spin"></span>检索法规库并计算…</div>`;
+  try {
+    const r = await fetch('/api/ask', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q})});
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || '请求失败');
+    renderAsk(d);
+  } catch (e) {
+    $('#askResult').innerHTML = `<div class="card"><span style="color:#B02A1E">出错了：${esc(e.message)}</span></div>`;
+  }
+}
+$('#btnAsk').onclick = ask;
+$('#question').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) ask(); });
+
+function renderAsk(d) {
+  let html = '';
+  if (d.calc) {
+    html += `<div class="card"><h3>试算结果（规则引擎计算，未经过大模型）</h3>
+      <div class="verdict">本季应纳税费合计 <b style="font-size:17px">${fmt(d.calc.total)} 元</b>，综合税负率 ${(d.calc.effective_rate*100).toFixed(2)}%</div>
+      <table><thead><tr><th>项目</th><th class="num">计税依据</th><th>税率</th><th class="num">金额</th><th>说明</th></tr></thead><tbody>`;
+    d.calc.lines.forEach(l => {
+      html += `<tr><td>${esc(l.item)}</td><td class="num">${fmt(l.base)}</td><td>${esc(l.rate)}</td>
+        <td class="num">${fmt(l.amount)}</td><td style="color:#666">${esc(l.note)}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+  html += `<div class="card"><h3>回答</h3><div class="answer">${md(d.answer)}</div>
+    <p class="notice">生成方式：${d.source === 'llm' ? '大模型组织语言 · 条文与数字均由系统给出' : '模板模式（离线）'}</p></div>`;
+
+  if (d.hits && d.hits.length) {
+    html += `<div class="card"><h3>检索到的依据（BM25 命中，可点开原文核对）</h3>`;
+    d.hits.forEach((h, i) => {
+      html += `<div class="cite"><div class="n">${i+1}</div><div style="flex:1">
+        <div class="t">${esc(h.title)}</div>
+        <div class="d">${esc(h.doc_no)} ${esc(h.article)}</div>
+        <div class="x">${esc(h.text)}</div></div>
+        <div class="score">相关度 ${h.score}</div></div>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="card"><h3>依据</h3><div class="empty">未检索到相关条文，系统选择拒答而不是猜测。</div></div>`;
+  }
+  $('#askResult').innerHTML = html;
+}
+
+/* ---------- 体检 ---------- */
+$('#btnAudit').onclick = async () => {
+  const f = $('#file').files[0];
+  if (!f) { alert('请选择台账文件，或点击“载入样例台账”'); return; }
+  const buf = await f.arrayBuffer();
+  $('#auditResult').innerHTML = `<div class="card"><span class="spin"></span>正在逐行体检…</div>`;
+  try {
+    const r = await fetch('/api/audit', {
+      method:'POST',
+      headers:{'Content-Type':'application/octet-stream','X-Filename':f.name,
+               'X-Company':encodeURIComponent($('#company').value), 'X-Period':encodeURIComponent($('#period').value)},
+      body: buf
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || '失败');
+    renderAudit(d);
+  } catch (e) {
+    $('#auditResult').innerHTML = `<div class="card"><span style="color:#B02A1E">${esc(e.message)}</span></div>`;
+  }
+};
+
+$('#btnSample').onclick = async () => {
+  $('#auditResult').innerHTML = `<div class="card"><span class="spin"></span>载入样例台账并体检…</div>`;
+  const s = await (await fetch('/api/sample')).json();
+  const r = await fetch('/api/audit', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({rows: s.rows, company: $('#company').value, period: $('#period').value})
+  });
+  renderAudit(await r.json());
+};
+
+function renderAudit(d) {
+  if (!d.ok) { $('#auditResult').innerHTML = `<div class="card">${esc(d.error)}</div>`; return; }
+  const s = d.summary;
+  let html = `<div class="card"><h3>体检结论</h3>
+    <div class="verdict">${esc(s.verdict)}　风险分 <b>${s.risk_score}</b> / 100</div>
+    <div class="stat">
+      <div><b>${s.rows}</b><span>台账行数</span></div>
+      <div><b style="color:#B02A1E">${s.high}</b><span>高危问题</span></div>
+      <div><b style="color:#A96500">${s.mid}</b><span>中风险问题</span></div>
+      <div><b style="color:#3F6491">${s.low}</b><span>提示项</span></div>
+      <div><b>${fmt(s.total_amount)}</b><span>台账金额合计</span></div>
+    </div></div>`;
+
+  if (!d.items.length) {
+    html += `<div class="card"><h3>问题清单</h3><div class="empty">未发现明显问题。</div></div>`;
+  } else {
+    html += `<div class="card"><h3>问题清单（${d.items.length} 条，按严重程度排序）</h3>
+      <table><thead><tr><th style="width:64px">级别</th><th style="width:170px">问题</th><th>具体位置与说明</th><th style="width:150px">判定依据</th><th style="width:190px">处理建议</th></tr></thead><tbody>`;
+    const order = {'高':0,'中':1,'低':2};
+    d.items.slice().sort((a,b) => order[a.level] - order[b.level]).forEach(it => {
+      html += `<tr><td><span class="lv ${it.level}">${it.level}</span></td>
+        <td><b>${esc(it.title)}</b></td>
+        <td>${esc(it.detail)}</td>
+        <td style="font-size:12px;color:#555">${esc(it.reg)}<br><span style="color:#888">${esc(it.reg_title || '')}</span></td>
+        <td style="font-size:12.5px">${esc(it.advice)}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+  $('#auditResult').innerHTML = html;
+}
+
+/* ---------- 试算 ---------- */
+$('#btnCalc').onclick = async () => {
+  const params = {
+    taxpayer_type: $('#c_type').value,
+    quarter_sales: Number($('#c_sales').value) || 0,
+    special_invoice_sales: Number($('#c_special').value) || 0,
+    vat_rate: Number($('#c_rate').value),
+    input_vat: Number($('#c_input').value) || 0,
+    profit: Number($('#c_profit').value) || 0,
+    city: $('#c_city').value,
+    contract_amount: Number($('#c_contract').value) || 0,
+    six_tax_half: $('#c_half').checked,
+    small_profit: $('#c_small').checked
+  };
+  const r = await fetch('/api/calc', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({params})});
+  const d = await r.json();
+  const c = d.calc;
+  let html = `<div class="card"><h3>试算结果</h3>
+    <div class="verdict">应纳税费合计 <b style="font-size:17px">${fmt(c.total)} 元</b>，综合税负率 ${(c.effective_rate*100).toFixed(2)}%</div>
+    <table><thead><tr><th>项目</th><th class="num">计税依据</th><th>税率</th><th class="num">金额</th><th>说明</th></tr></thead><tbody>`;
+  c.lines.forEach(l => {
+    html += `<tr><td>${esc(l.item)}</td><td class="num">${fmt(l.base)}</td><td>${esc(l.rate)}</td>
+      <td class="num">${fmt(l.amount)}</td><td style="color:#666">${esc(l.note)}</td></tr>`;
+  });
+  html += `<tr><td><b>合计</b></td><td></td><td></td><td class="num"><b>${fmt(c.total)}</b></td><td></td></tr></tbody></table>`;
+  if (c.notes.length) {
+    html += `<div style="margin-top:14px">`;
+    c.notes.forEach(n => html += `<p style="margin:6px 0;font-size:13px"><span class="tag">${esc(n.level)}</span>${esc(n.text)}</p>`);
+    html += `</div>`;
+  }
+  if (d.gaps.length) {
+    html += `<div class="notice">还缺这些信息：<br>${d.gaps.map(g => '· ' + esc(g)).join('<br>')}</div>`;
+  }
+  html += `<div class="notice">${c.assumptions.map(a => '· ' + esc(a)).join('<br>')}</div></div>`;
+  $('#calcResult').innerHTML = html;
+};
+</script>
+</body>
+</html>
